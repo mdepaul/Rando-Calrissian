@@ -82,13 +82,6 @@ namespace MD.RandoCalrissian
             }
         }
 
-        public char GetCharacter(byte randomByte, string characterSpace)
-        {
-            int position = XConvert.ToInt32(randomByte);
-            position = position % characterSpace.Length;
-            return characterSpace.ToCharArray()[position];
-        }
-
         public string GetRandomCharacters(int number, string characterSpace)
         {
             StringBuilder sb = new StringBuilder(number);
@@ -104,6 +97,13 @@ namespace MD.RandoCalrissian
                 sb.Append(GetCharacter(tempBytes[i], characterSpace));
             }
             return sb.ToString();
+        }
+
+        public char GetCharacter(byte randomByteValue, string characterSpace)
+        {
+            int position = XConvert.ToInt32(randomByteValue);
+            position = position % characterSpace.Length;
+            return characterSpace.ToCharArray()[position];
         }
 
         public string MakePassword(int totalLength, int numberUpperCase, int numberLowerCase, int numberDigit, int numberSpecial)
