@@ -33,12 +33,6 @@ namespace MD.RandoCalrissian
         static void Main(string[] args)
         {
             ProcessArguments(args);
-
-            //#if DEBUG
-            //            Console.Read();
-            //#endif
-
-            Console.ReadKey();
         }
 
         static void ProcessArguments(string[] args)
@@ -47,7 +41,6 @@ namespace MD.RandoCalrissian
             if (clp.Help)
             {
                 WriteHelpText();
-                //Console.ReadKey();
                 return;
             }
 
@@ -63,16 +56,13 @@ namespace MD.RandoCalrissian
 
                 CopyToClipboard(output);
                 ShowCopiedText(output);
-                //MikeDePaul.Utilities.Crypto.Wipe.String(output);
                 Console.WriteLine(ClipboardCopyText);
-                //Console.ReadKey();
+                Console.ReadKey();
             }
             else
             {
 
                 Console.Out.WriteLine(output);
-                //MikeDePaul.Utilities.Crypto.Wipe.String(output);
-                //Console.ReadKey();
             }
         }
 
