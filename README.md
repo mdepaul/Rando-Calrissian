@@ -9,13 +9,13 @@
   
 ## Useage
 * Calrissian
- * Get random Star Wars quotes from BDW
-  * ex: rando Calrissian
-   * Break off the attack! The shield is still up!
-   * Don't worry, my friend's down there. He'll have that shield down in time. Or this'll be the shortest offensive of all time.
+  * Get random Star Wars quotes from BDW
+    * ex: rando Calrissian
+    * Break off the attack! The shield is still up!
+    * Don't worry, my friend's down there. He'll have that shield down in time. Or this'll be the shortest offensive of all time.
 
 * B = Number of bytes of output desired.
- * ex: 'rando b=12 e=h' will generate 12 random bytes, encoded in hexadecimal
+  * ex: 'rando b=12 e=h' will generate 12 random bytes, encoded in hexadecimal
 
 * E = Encoding
  * Key Encodings
