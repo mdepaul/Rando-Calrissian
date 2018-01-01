@@ -22,8 +22,7 @@ E = Encoding
 	Key Encodings
 		H=Hexadecimal
 		b64=Base64
-		sb64=Safe Base64. Replaces "/" with "."; "+" with "_"; "==" with "--"
-
+		sb64=Safe Base64. Replaces '/' with '.'; '+' with '_'; '==' with '--'
 		ex: 'rando b=12 e=h' will generate 12 random bytes, encoded in hexadecimal
 		ex: 'rando b=32 e=b64' will generate 32 random bytes, encoded in Base64
 		ex: 'rando b=64 e=sb64' will generate 64 random bytes, encoded in Safe Base64
@@ -39,11 +38,9 @@ E = Encoding
 
 	Dice mode
 		e=dice
-		Must include a listing of dice to "roll."
+		Must include a listing of dice to 'roll.'
 		Valid dice a d4, d6, d10, d12& d20
-		
-		ex: 'rando e=dice d6 d10=3 d4=5' means roll 1 d6, 3 d10's and 5 d4's. The sum of all dice rolls is returned.
-		
+		ex: 'rando e=dice d6 d10=3 d4=5' means roll 1 d6, 3 d10's and 5 d4's. The sum of all dice rolls is returned.	
 
 F = File mode
 	Read the lines in the given file and return the value at a random line.
@@ -52,10 +49,8 @@ F = File mode
 	Top=N means return N number of random lines from this file text
 	ex: 'rando f=c:\list.txt top=3' to get three random lines from C:\list.txt
 
-
 C = Clipboard
 	Copy the output to the clipboard for easy pasting.
-
 
 V = Verbose
 	Also output full switch settings
