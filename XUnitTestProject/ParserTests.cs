@@ -84,7 +84,12 @@ namespace UnitTests
 
             CommandLinePreferences clp = new CommandLinePreferences(args);
 
-            Assert.True(clp.MinumumUpper == 5 && clp.MinimumLower == 4 && clp.MinimumDigit == 2 && clp.MinimumSpecial == 1);
+            bool goodUpper = (clp.UseUpper == true) ? clp.MinumumUpper == 5 : clp.MinumumUpper == 0;
+            bool goodLower = (clp.UseLower == true) ? clp.MinimumLower == 4 : clp.MinimumLower == 0;
+            bool goodSpecial = (clp.UseSpecial == true) ? clp.MinimumSpecial == 1 : clp.MinimumSpecial == 0;
+            bool goodDigit = (clp.UseDigit == true) ? clp.MinimumDigit == 2 : clp.MinimumDigit == 0;
+
+            Assert.True(goodUpper && goodLower && goodSpecial && goodDigit);
             //Assert.True(clp.MinumumUpper == 5);
         }
 
@@ -96,7 +101,7 @@ namespace UnitTests
         public void ParserHexEncoding(string[] args)
         {
             CommandLinePreferences clp = new CommandLinePreferences(args);
-            Assert.True(clp.ByteEncoding == XEncoding.Hex);
+            Assert.True(clp.ByteEncoding == XEncoding.Hex && clp.IsValid());
         }
 
         [Theory]
@@ -109,7 +114,7 @@ namespace UnitTests
 
             CommandLinePreferences clp = new CommandLinePreferences(args);
 
-            Assert.True(clp.ByteEncoding == XEncoding.Base64);
+            Assert.True(clp.ByteEncoding == XEncoding.Base64 && clp.IsValid());
         }
 
         [Theory]
@@ -122,7 +127,7 @@ namespace UnitTests
 
             CommandLinePreferences clp = new CommandLinePreferences(args);
 
-            Assert.True(clp.ByteEncoding == XEncoding.SafeBase64);
+            Assert.True(clp.ByteEncoding == XEncoding.SafeBase64 && clp.IsValid());
         }
 
         //TODO: Test Dice encoding...
@@ -137,7 +142,7 @@ namespace UnitTests
 
             CommandLinePreferences clp = new CommandLinePreferences(args);
 
-            Assert.True(clp.ByteEncoding == XEncoding.Dice);
+            Assert.True(clp.ByteEncoding == XEncoding.Dice && clp.IsValid());
         }
     }
 }

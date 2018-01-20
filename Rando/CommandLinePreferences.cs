@@ -234,8 +234,24 @@ namespace MD.RandoCalrissian
         private void ParsePassword(Dictionary<string, string> args)
         {
             ParseByteLength(args);
-            ParseCharacterMix(args);
             ParseMinimumCharacters(args);
+            ParseCharacterMix(args);
+            if (!UseUpper)
+            {
+                MinumumUpper = 0;
+            }
+            if (!UseLower)
+            {
+                MinimumLower = 0;
+            }
+            if (!UseDigit)
+            {
+                MinimumDigit = 0;
+            }
+            if (!UseSpecial)
+            {
+                MinimumSpecial = 0;
+            }
         }
 
         private void ParseRepeat(Dictionary<string, string> args)
@@ -485,7 +501,10 @@ namespace MD.RandoCalrissian
                 return Bytes > 0;
             }
 
-
+            if (ByteEncoding == XEncoding.Dice)
+            {
+                return (D4 + D6 + D8 + D10 + D12 + D20) > 0;
+            }
             if (ByteEncoding == XEncoding.Password)
             {
                 if (Bytes < 1) return false;

@@ -51,6 +51,12 @@ namespace MD.RandoCalrissian
                 Console.WriteLine(clp.ToString());
             }
 
+            if (!clp.IsValid())
+            {
+                Console.WriteLine("Invalid parameters");
+                return;
+            }
+
             string output = ReadOutput(clp, new PrngSHA256());
 
             if (clp.Clipboard)
