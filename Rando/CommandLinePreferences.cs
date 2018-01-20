@@ -4,12 +4,25 @@
  * **/
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
 
 namespace MD.RandoCalrissian
 {
+    public class KeyVal
+    {
+        public string Key { get; set; }
+        public string Value { get; set; }
+
+        public KeyVal()
+        {
+            Key = "";
+            Value = "";
+        }
+    }
+
     public class CommandLinePreferences
     {
         public XEncoding ByteEncoding { get; set; }
@@ -42,11 +55,14 @@ namespace MD.RandoCalrissian
         public bool Verbose { get; set; }
         public bool Clipboard { get; set; }
         public int Repeat { get; set; }
-        public bool IsValid { get; set; }
 
         public bool Calrissian { get; set; }
 
         public ArgumentException ArgumentException { get; set; }
+
+        Dictionary<string, string> Arguments { get; set; }
+
+        //TODO: Make this into a Factory that delivers specific parsers... ?
 
         /// <summary>
         /// Parses the arguments and creates a CommandLinePreferences object.
@@ -59,160 +75,292 @@ namespace MD.RandoCalrissian
         public CommandLinePreferences(string[] args)
         {
             Repeat = 1;
-            foreach (var item in args)
+            Arguments = ParseArgs(args);
+
+            GetByteEncoding(Arguments);
+
+            switch (ByteEncoding)
             {
-                if (String.IsNullOrEmpty(item))
-                    continue;
-
-                if (item.StartsWith("Calrissian", StringComparison.CurrentCultureIgnoreCase))
-                {
-                    IsValid = true;
-                    Calrissian = true;
-                    //break;
-                }
-
-                if (item.StartsWith("H", StringComparison.CurrentCultureIgnoreCase) || item.StartsWith("Help", StringComparison.CurrentCultureIgnoreCase))
-                {
-                    Help = true;
+                case XEncoding.Unknown:
                     break;
-                }
-
-                if (item.StartsWith("b=", StringComparison.CurrentCultureIgnoreCase) || item.StartsWith("byte=", StringComparison.CurrentCultureIgnoreCase) || item.StartsWith("bytes=", StringComparison.CurrentCultureIgnoreCase))
-                    Bytes = ParseArgument(item, Bytes);
-
-                if (item.StartsWith("e=", StringComparison.CurrentCultureIgnoreCase) || item.StartsWith("encoding=", StringComparison.CurrentCultureIgnoreCase))
-                {
-                    try
-                    {
-                        ByteEncoding = ParseXEncoding(item);
-                    }
-                    catch (ArgumentException e)
-                    {
-                        ArgumentException = e;
-                        return;
-                    }
-                    UseUpper = ByteEncoding == XEncoding.Password ? ParseArgument(item, "U") : false;
-                    UseLower = ByteEncoding == XEncoding.Password ? ParseArgument(item, "L") : false;
-                    UseSpecial = ByteEncoding == XEncoding.Password ? ParseArgument(item, "S") : false;
-                    UseDigit = ByteEncoding == XEncoding.Password ? ParseArgument(item, "D") : false;
-                }
-
-                #region Passwords
-                if (item.StartsWith("u=", StringComparison.CurrentCultureIgnoreCase) || item.StartsWith("upper=", StringComparison.CurrentCultureIgnoreCase))
-                    MinumumUpper = ParseArgument(item, MinumumUpper);
-
-                if (item.StartsWith("l=", StringComparison.CurrentCultureIgnoreCase) || item.StartsWith("lower=", StringComparison.CurrentCultureIgnoreCase))
-                    MinimumLower = ParseArgument(item, MinimumLower);
-
-                if (item.StartsWith("d=", StringComparison.CurrentCultureIgnoreCase) || item.StartsWith("digit=", StringComparison.CurrentCultureIgnoreCase) || item.StartsWith("digits=", StringComparison.CurrentCultureIgnoreCase))
-                    MinimumDigit = ParseArgument(item, MinimumDigit);
-
-                if (item.StartsWith("s=", StringComparison.CurrentCultureIgnoreCase) || item.StartsWith("special=", StringComparison.CurrentCultureIgnoreCase))
-                    MinimumSpecial = ParseArgument(item, MinimumSpecial);
-                #endregion
-
-                #region Dice
-                if (item.StartsWith("d4", StringComparison.CurrentCultureIgnoreCase))
-                    D4 = ParseArgument(item, 1);
-
-                if (item.StartsWith("d6", StringComparison.CurrentCultureIgnoreCase))
-                    D6 = ParseArgument(item, 1);
-
-                if (item.StartsWith("d8", StringComparison.CurrentCultureIgnoreCase))
-                    D8 = ParseArgument(item, 1);
-
-                if (item.StartsWith("d10", StringComparison.CurrentCultureIgnoreCase))
-                    D10 = ParseArgument(item, 1);
-
-                if (item.StartsWith("d12", StringComparison.CurrentCultureIgnoreCase))
-                    D12 = ParseArgument(item, 1);
-
-                if (item.StartsWith("d20", StringComparison.CurrentCultureIgnoreCase))
-                    D20 = ParseArgument(item, 1);
-                #endregion
-
-                if (item.StartsWith("F", StringComparison.CurrentCultureIgnoreCase) && item.Contains("="))
-                    FilePath = ParseArgument(item);
-
-                if (item.StartsWith("top", StringComparison.CurrentCultureIgnoreCase) && item.Contains("="))
-                    FileTop = ParseArgument(item, FileTop);
-
-                if (item.StartsWith("R", StringComparison.CurrentCultureIgnoreCase) && item.Contains("="))
-                    Repeat = ParseArgument(item, Repeat);
-
-                if (item.StartsWith("C", StringComparison.CurrentCultureIgnoreCase) && item.StartsWith("Calrissian", StringComparison.CurrentCultureIgnoreCase) == false)
-                    Clipboard = true;
-
-                if (item.StartsWith("V", StringComparison.CurrentCultureIgnoreCase) || item.StartsWith("Verbose", StringComparison.CurrentCultureIgnoreCase))
-                    Verbose = true;
-
-                //if (item.StartsWith("K", StringComparison.CurrentCultureIgnoreCase))
-                //    keepOpen = true;
-
-                //if (item.StartsWith("?"))
-                //    help = true;
+                case XEncoding.Help:
+                    break;
+                case XEncoding.Password:
+                    ParsePassword(Arguments);
+                    break;
+                case XEncoding.Calrissian:
+                    break;
+                case XEncoding.Dice:
+                    ParseDice(Arguments);
+                    break;
+                case XEncoding.File:
+                    ParseFile(Arguments);
+                    break;
+                case XEncoding.Hex:
+                    ParseHex(Arguments);
+                    break;
+                case XEncoding.Base64:
+                    ParseBase64(Arguments);
+                    break;
+                case XEncoding.SafeBase64:
+                    ParseSafeBase64(Arguments);
+                    break;
+                default:
+                    break;
             }
 
-            if (Calrissian)
-            {
-                IsValid = true;
-                return;
-            }
 
-            if (this.ByteEncoding == XEncoding.Dice)
-            {
-                IsValid = true;
-                return;
-            }
-
-            if (!String.IsNullOrEmpty(FilePath))
-            {
-                ReadFile = true;
-                IsValid = true;
-                return;
-            }
-
-            if (Bytes < 0)
-            {
-                IsValid = false;
-                ArgumentException = new ArgumentException(String.Format("{0} is an invalid number of bytes, a positive integer is required", Bytes));
-                return;
-            }
-
-            if ((MinumumUpper + MinimumLower + MinimumSpecial + MinimumDigit) > Bytes)
-            {
-                IsValid = false;
-                ArgumentException = new ArgumentException(String.Format("The parameters require {0} bytes, but the desired length is only {1}", MinumumUpper + MinimumLower + MinimumSpecial + MinimumDigit, Bytes));
-                return;
-            }
-
-            if (ByteEncoding == XEncoding.Password)
-            {
-                MinumumUpper = UseUpper ? MinumumUpper : 0;
-                MinimumLower = UseLower ? MinimumLower : 0;
-                MinimumDigit = UseDigit ? MinimumDigit : 0;
-                MinimumSpecial = UseSpecial ? MinimumSpecial : 0;
-
-                MinumumUpper = UseUpper && MinumumUpper == 0 ? 1 : MinumumUpper;
-                MinimumLower = UseLower && MinimumLower == 0 ? 1 : MinimumLower;
-                MinimumDigit = UseDigit && MinimumDigit == 0 ? 1 : MinimumDigit;
-                MinimumSpecial = UseSpecial && MinimumSpecial == 0 ? 1 : MinimumSpecial;
-            }
-
-            if (ByteEncoding == XEncoding.Dice)
-            {
-                //TODO: What?
-            }
-
-            if ((ByteEncoding == XEncoding.Hex || ByteEncoding == XEncoding.Hex) && Bytes < 1)
-            {
-                IsValid = false;
-                ArgumentException = new ArgumentException(String.Format("{0} bytes is an invalid number.", Bytes));
-                return;
-            }
-            IsValid = true;
+            ParseRepeat(Arguments);
+            ParseVerbose(Arguments);
+            ParseClipboard(Arguments);
         }
 
+        private void GetByteEncoding(Dictionary<string, string> args)
+        {
+            if (args.Keys.Contains("calrissian"))
+            {
+                ByteEncoding = XEncoding.Calrissian;
+                return;
+            }
+
+            if (args.Keys.Contains("?"))
+            {
+                ByteEncoding = XEncoding.Help;
+            }
+
+
+            if (args.Keys.Contains("f"))
+            {
+                ByteEncoding = XEncoding.Help;
+            }
+
+            if (args.Keys.Contains("file"))
+            {
+                ByteEncoding = XEncoding.Help;
+            }
+
+            if (args.Keys.Contains("e"))
+            {
+                if (args["e"] == "dice")
+                {
+                    ByteEncoding = XEncoding.Dice;
+                    return;
+                }
+
+                if (args["e"] == "h" || args["e"] == "hex")
+                {
+                    ByteEncoding = XEncoding.Hex;
+                    return;
+                }
+
+                if (args["e"] == "b64" || args["e"] == "base64")
+                {
+                    ByteEncoding = XEncoding.Base64;
+                    return;
+                }
+
+                if (args["e"] == "sb64" || args["e"] == "safebase64")
+                {
+                    ByteEncoding = XEncoding.SafeBase64;
+                    return;
+                }
+
+                if (args["e"].Contains("u") || args["e"].Contains("l") || args["e"].Contains("d") || args["e"].Contains("s"))
+                {
+                    ByteEncoding = XEncoding.Password;
+                    return;
+                }
+            }
+
+            ByteEncoding = XEncoding.Unknown;
+
+        }
+
+        private Dictionary<string, string> ParseArgs(string[] args)
+        {
+            Dictionary<string, string> arguments = new Dictionary<string, string>();
+            KeyVal keyVal;
+            foreach (var arg in args)
+            {
+                if (arg != null)
+                {
+                    keyVal = ParseArg(arg);
+                    if (arguments.ContainsKey(keyVal.Key) == false)     //Only keep the first arg value
+                    {
+                        arguments.Add(keyVal.Key, keyVal.Value);
+                    }
+                }
+            }
+
+            return arguments;
+        }
+
+        private static KeyVal ParseArg(string arg)
+        {
+            arg = arg.ToLower();
+            KeyVal keyVal = new KeyVal();
+            string[] p = arg.Split("=".ToCharArray());
+            if (p.Length > 1)
+            {
+                keyVal.Key = p[0].Trim();
+                keyVal.Value = arg.Substring(p[0].Length);
+                keyVal.Value = keyVal.Value.Replace("=", "").Trim();
+            }
+            else
+            {
+                keyVal.Key = arg;
+            }
+
+            return keyVal;
+        }
+
+        #region Common
+        private void ParseCharacterMix(Dictionary<string, string> args)
+        {
+            string mix = "";
+            if (args.ContainsKey("e"))
+            {
+                mix = args["e"];
+            }
+
+            UseUpper = mix.Contains("u");
+            UseLower = mix.Contains("l");
+            UseDigit = mix.Contains("d");
+            UseSpecial = mix.Contains("s");
+        }
+        #endregion
+
+        #region Parse Operations
+        private void ParsePassword(Dictionary<string, string> args)
+        {
+            ParseByteLength(args);
+            ParseCharacterMix(args);
+            ParseMinimumCharacters(args);
+        }
+
+        private void ParseRepeat(Dictionary<string, string> args)
+        {
+            string repeat = "";
+            if (args.ContainsKey("r"))
+            {
+                repeat = args["r"];
+            }
+
+            if (int.TryParse(repeat, out int oRepeat))
+            {
+                Repeat = oRepeat;
+            }
+        }
+
+
+        private void ParseVerbose(Dictionary<string, string> args)
+        {
+            Verbose = args.ContainsKey("v");
+        }
+
+        private void ParseClipboard(Dictionary<string, string> args)
+        {
+            Clipboard = args.ContainsKey("c");
+        }
+
+        private void ParseByteLength(Dictionary<string, string> args)
+        {
+            Bytes = 0;
+            if (args.ContainsKey("b") == false && args.ContainsKey("byte") == false && args.ContainsKey("bytes") == false)
+                return;
+
+            string bytes = "";
+            if (args.ContainsKey("b"))
+                bytes = args["b"];
+
+            if (args.ContainsKey("byte"))
+                bytes = args["byte"];
+
+            if (args.ContainsKey("bytes"))
+                bytes = args["bytes"];
+
+            if (int.TryParse(bytes, out int iBytes))
+            {
+                Bytes = iBytes;
+            }
+        }
+
+        private void ParseMinimumCharacters(Dictionary<string, string> args)
+        {
+            MinumumUpper = ParseArgValue(args, "u");
+            MinimumLower = ParseArgValue(args, "l");
+            MinimumDigit = ParseArgValue(args, "d");
+            MinimumSpecial = ParseArgValue(args, "s");
+        }
+
+        private void ParseDice(Dictionary<string, string> args)
+        {
+            D4 = ParseArgValue(args, "d4");
+            D6 = ParseArgValue(args, "d6");
+            D8 = ParseArgValue(args, "d8");
+            D10 = ParseArgValue(args, "d10");
+            D12 = ParseArgValue(args, "d12");
+            D20 = ParseArgValue(args, "d20");
+        }
+
+        private int ParseArgValue(Dictionary<string, string> args, string diceKey)
+        {
+            int count = 0;
+            if (args.ContainsKey(diceKey) == false)
+                return count;
+
+            if (int.TryParse(args[diceKey], out int iCount))
+            {
+                count = iCount;
+            }
+
+            return count;
+        }
+
+        private void ParseFile(Dictionary<string, string> args)
+        {
+            ParseFileName(args);
+            ParseFileTop(args);
+        }
+
+        private void ParseFileName(Dictionary<string, string> args)
+        {
+            if (args.ContainsKey("f"))
+            {
+                FilePath = args["f"];
+            }
+        }
+
+        private void ParseFileTop(Dictionary<string, string> args)
+        {
+            string top = "";
+            if (args.ContainsKey("top"))
+            {
+                top = args["top"];
+            }
+
+            if (int.TryParse(top, out int oTop))
+            {
+                FileTop = oTop;
+            }
+        }
+
+        private void ParseHex(Dictionary<string, string> args)
+        {
+            ParseByteLength(args);
+        }
+
+        private void ParseBase64(Dictionary<string, string> args)
+        {
+            ParseByteLength(args);
+        }
+
+        private void ParseSafeBase64(Dictionary<string, string> args)
+        {
+            ParseByteLength(args);
+        }
+
+        #endregion
 
         bool IsCalrissian(string[] args)
         {
@@ -230,20 +378,6 @@ namespace MD.RandoCalrissian
             return false;
         }
 
-        XEncoding ParseXEncoding(string[] args)
-        {
-            XEncoding encoding = XEncoding.Password;
-            foreach (var item in args)
-            {
-                if (String.IsNullOrEmpty(item))
-                    continue;
-
-
-            }
-            return encoding;
-        }
-
-
         int ParseArgument(string arg, int current)
         {
             int returnValue = current;
@@ -252,13 +386,11 @@ namespace MD.RandoCalrissian
 
             string[] split = arg.Split("=".ToCharArray());
             string val = split[1];
-            int newValue;
-            if (Int32.TryParse(val, out newValue))
+            if (Int32.TryParse(val, out int newValue))
                 returnValue = newValue;
 
             return returnValue;
         }
-
 
         private bool ParseArgument(string arg, string p)
         {
@@ -324,6 +456,55 @@ namespace MD.RandoCalrissian
                 return XEncoding.Password;
             }
             throw new ArgumentException("\"{0}\" is not a valid encoding.", val);
+        }
+
+        public bool IsValid()
+        {
+            if (ByteEncoding == XEncoding.Unknown)
+            {
+                return false;
+            }
+
+            if (Repeat < 1)
+            {
+                return false;
+            }
+
+            if (ByteEncoding == XEncoding.Hex)
+            {
+                return Bytes > 0;
+            }
+
+            if (ByteEncoding == XEncoding.Base64)
+            {
+                return Bytes > 0;
+            }
+
+            if (ByteEncoding == XEncoding.SafeBase64)
+            {
+                return Bytes > 0;
+            }
+
+
+            if (ByteEncoding == XEncoding.Password)
+            {
+                if (Bytes < 1) return false;
+
+                if (UseUpper == false && UseLower == false && UseSpecial == false && UseDigit == false)
+                {
+                    return false;
+                }
+
+                if ((MinumumUpper + MinimumLower + MinimumDigit + MinimumSpecial) > Bytes)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+
+            //Check depending on settings...
+            return false;
         }
 
         public override string ToString()

@@ -37,6 +37,8 @@ namespace MD.RandoCalrissian
 
         static void ProcessArguments(string[] args)
         {
+
+
             CommandLinePreferences clp = new CommandLinePreferences(args);
             if (clp.Help)
             {

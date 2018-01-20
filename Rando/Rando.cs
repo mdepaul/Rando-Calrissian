@@ -55,7 +55,7 @@ namespace MD.RandoCalrissian
         }
         public Rando Make()
         {
-            if (!Clp.IsValid)
+            if (!Clp.IsValid())
             {
                 outPut = Clp.ArgumentException.Message;
                 return this;
