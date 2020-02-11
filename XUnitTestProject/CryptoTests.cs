@@ -20,7 +20,7 @@ namespace UnitTests
         {
             IPrng prng = new PrngSHA256();
             Crypto myCrypto = new Crypto(prng);
-            double numberOfRandomCharactersDesired = 1000000;
+            const double numberOfRandomCharactersDesired = 1000000;
             string characterSpace = "abcdefghijklmnopqrstuvwxyz";
 
             Dictionary<char, Stats> characterMap = new Dictionary<char, Stats>();
@@ -36,7 +36,7 @@ namespace UnitTests
                 characterMap[randomCharacters[i]].Count++;
             }
 
-            double margin = 1.5;  //Each character must must be within 1.5% of the expected perfect distribution (98.5%-101.5%)
+            const double margin = 1.5;  //Each character must must be within 1.5% of the expected perfect distribution (98.5%-101.5%)
             double expected = numberOfRandomCharactersDesired / ((double)characterSpace.Length);
             double actual;
             foreach (var mix in characterMap)
